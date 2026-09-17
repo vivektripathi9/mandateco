@@ -741,7 +741,7 @@ button {
 .system {
   background: var(--white);
   color: var(--black);
-  padding: clamp(5.5rem, 12vw, 9.5rem) var(--pad-x);
+  padding: clamp(5.5rem, 12vw, 9.5rem) var(--pad-x) clamp(3.25rem, 7.5vw, 6.5rem);
   scroll-margin-top: var(--nav-h);
 }
 
