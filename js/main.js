@@ -66,6 +66,7 @@
   const offer = document.querySelector(".offer");
   const why = document.querySelector(".why");
   const voices = document.querySelector(".voices");
+  const quotes = document.querySelector(".quotes");
   const projects = document.querySelector(".projects");
   const blog = document.querySelector(".blog");
   const closer = document.querySelector(".closer");
@@ -130,10 +131,17 @@
   observeReveal(founder);
   observeReveal(journey);
   observeReveal(offer);
-  observeReveal(why, initWhy(why));
+  const startWhy = initWhy(why);
+  observeReveal(why, function () {
+    if (voices) voices.classList.add("is-in");
+    if (typeof startWhy === "function") startWhy();
+  }, {
+    threshold: 0.04,
+    rootMargin: "0px 0px -8% 0px"
+  });
   pauseOffscreen(hero);
   pauseOffscreen(journey);
-  observeReveal(voices);
+  observeReveal(quotes);
   observeReveal(projects, null, {
     threshold: 0.04,
     rootMargin: "0px 0px -8% 0px",
@@ -142,7 +150,8 @@
   observeReveal(closer);
   initOffer(offer);
   initWhyNet(why);
-  initVoices(voices);
+  initVoicesSlider(voices);
+  initQuotesSlider(quotes);
 
   if (projects && location.hash === "#projects") {
     window.requestAnimationFrame(function () {
@@ -478,285 +487,180 @@
     }, 6500);
   }
 
-  function initVoices(section) {
+  function initVoicesSlider(section) {
     if (!section) return;
 
-    const stage = section.querySelector(".voices__stage");
-    const center = section.querySelector(".voices__center");
-    const cards = Array.prototype.slice.call(section.querySelectorAll(".voices__card"));
-    const mq = window.matchMedia("(min-width: 1100px)");
-    const seed0 = Math.floor(Math.random() * 1e9) + 1;
-    let seed = seed0;
-    let timer;
+    const viewport = section.querySelector(".voices__viewport");
+    const prev = section.querySelector(".voices__nav--prev");
+    const next = section.querySelector(".voices__nav--next");
+    const cards = section.querySelectorAll(".voices__card");
+    if (!viewport || !prev || !next || !cards.length) return;
 
-    function rand() {
-      seed = (seed * 16807) % 2147483647;
-      return (seed - 1) / 2147483646;
+    let index = 0;
+
+    function cardStep() {
+      const grid = cards[0].parentElement;
+      const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+      return cards[0].offsetWidth + gap;
     }
 
-    function resetSeed() {
-      seed = seed0;
+    function maxScroll() {
+      return Math.max(0, viewport.scrollWidth - viewport.clientWidth);
     }
 
-    function clear() {
-      cards.forEach(function (card) {
-        card.style.left = "";
-        card.style.top = "";
+    function maxIndex() {
+      const step = cardStep();
+      if (!step) return 0;
+      return Math.max(0, Math.round(maxScroll() / step));
+    }
+
+    function update() {
+      prev.disabled = index <= 0;
+      next.disabled = index >= maxIndex();
+    }
+
+    function go(dir) {
+      const step = cardStep();
+      if (!step) return;
+      index = Math.max(0, Math.min(maxIndex(), index + dir));
+      viewport.scrollTo({
+        left: index * step,
+        behavior: reduceMotion ? "auto" : "smooth"
       });
+      update();
     }
 
-    function placeInRegion(card, region, bias, align) {
-      const w = card.offsetWidth;
-      const h = card.offsetHeight;
-      let minL = region.l;
-      let maxL = region.r - w;
-      let minT = region.t;
-      let maxT = region.b - h;
-      if (maxL < minL) {
-        minL = region.l;
-        maxL = minL;
-      }
-      if (maxT < minT) {
-        minT = region.t;
-        maxT = minT;
-      }
-      const spanT = maxT - minT;
-      let top;
-      if (bias === "down") {
-        top = minT + spanT * (0.7 + rand() * 0.3);
-      } else if (bias === "up") {
-        top = minT + spanT * (rand() * 0.3);
-      } else {
-        top = minT + rand() * spanT;
-      }
-      let left;
-      if (align === "center-right") {
-        left = (region.l + region.r) / 2 - w / 2 + 44;
-        left = Math.max(minL, Math.min(left, maxL));
-      } else {
-        left = minL + rand() * (maxL - minL);
-      }
-      card.style.left = Math.round(left) + "px";
-      card.style.top = Math.round(top) + "px";
-    }
-
-    function layout() {
-      if (!mq.matches) {
-        clear();
-        return;
-      }
-
-      resetSeed();
-
-      const styles = window.getComputedStyle(stage);
-      const padL = parseFloat(styles.paddingLeft) || 0;
-      const padR = parseFloat(styles.paddingRight) || 0;
-      const padT = parseFloat(styles.paddingTop) || 0;
-      const padB = parseFloat(styles.paddingBottom) || 0;
-      const stageW = stage.clientWidth;
-      const stageH = stage.clientHeight;
-      const gap = 56;
-      const pairGap = 16;
-      const cw = center.offsetWidth;
-      const ch = center.offsetHeight;
-      const cx = (stageW - cw) / 2;
-      const cy = (stageH - ch) / 2;
-      const meet = cy + ch * 0.5;
-      const midL = cx;
-      const midR = cx + cw;
-      const leftR = cx - gap;
-      const rightL = cx + cw + gap;
-
-      placeInRegion(cards[0], { l: padL, t: padT, r: leftR, b: meet - pairGap / 2 }, "down");
-      placeInRegion(cards[1], { l: midL, t: padT, r: midR, b: cy - gap }, null, "center-right");
-      placeInRegion(cards[2], { l: rightL, t: padT, r: stageW - padR, b: meet - pairGap / 2 }, "down");
-      placeInRegion(cards[3], { l: padL, t: meet + pairGap / 2, r: leftR, b: stageH - padB }, "up");
-      placeInRegion(cards[4], { l: midL, t: cy + ch + gap, r: midR, b: stageH - padB }, null, "center-right");
-      placeInRegion(cards[5], { l: rightL, t: meet + pairGap / 2, r: stageW - padR, b: stageH - padB }, "up");
-    }
-
-    function onResize() {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(layout, 80);
-    }
-
-    function start() {
-      layout();
-      window.requestAnimationFrame(layout);
-    }
-
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(start);
-    } else {
-      start();
-    }
-
-    window.addEventListener("resize", onResize);
-    if (window.ResizeObserver) {
-      new window.ResizeObserver(onResize).observe(stage);
-    }
-    if (typeof mq.addEventListener === "function") {
-      mq.addEventListener("change", layout);
-    } else if (typeof mq.addListener === "function") {
-      mq.addListener(layout);
-    }
-
-    const reviews = [
-      {
-        quote: "They sold the inventory we had",
-        text: "Site visits started converting once the team knew the product as well as we did.",
-        name: "Arjun M.",
-        role: "Developer, Bengaluru",
-        initials: "AM"
-      },
-      {
-        quote: "Not another channel partner",
-        text: "We didn’t need more people on the floor. We needed someone who owned the funnel.",
-        name: "Priya K.",
-        role: "Project Head",
-        initials: "PK"
-      },
-      {
-        quote: "The numbers finally meant something",
-        text: "Weekly reports showed stuck leads, not activity. Closures followed.",
-        name: "Rahul S.",
-        role: "Director, Sales",
-        initials: "RS"
-      },
-      {
-        quote: "Our brand. Their process.",
-        text: "They sat on our site, sold as us, and didn’t drop the booking after the handshake.",
-        name: "Meera N.",
-        role: "Managing Partner",
-        initials: "MN"
-      },
-      {
-        quote: "Launch stopped being the finish line",
-        text: "After launch, the sale kept moving. Every enquiry had a next step.",
-        name: "Vikram D.",
-        role: "Developer",
-        initials: "VD"
-      },
-      {
-        quote: "We stayed on the product",
-        text: "Mandateco ran the sales floor. We ran construction. That split was the win.",
-        name: "Ananya R.",
-        role: "Principal, Residential",
-        initials: "AR"
-      },
-      {
-        quote: "Site visits started to close",
-        text: "Interest turned into a conversation on site, then a booking, without us chasing it.",
-        name: "Kabir T.",
-        role: "Project Director",
-        initials: "KT"
-      },
-      {
-        quote: "One team. One funnel.",
-        text: "Leads stopped getting lost between marketing, the site and the closer.",
-        name: "Sneha P.",
-        role: "Head of Sales",
-        initials: "SP"
-      },
-      {
-        quote: "They owned the next step",
-        text: "Every enquiry had a follow-up. Nothing sat in a WhatsApp thread.",
-        name: "Dev R.",
-        role: "Developer, Mysuru",
-        initials: "DR"
-      },
-      {
-        quote: "Reporting we could act on",
-        text: "We could see what was stuck and move it the same week.",
-        name: "Nisha L.",
-        role: "COO",
-        initials: "NL"
-      },
-      {
-        quote: "The floor finally felt like ours",
-        text: "They sold in our brand, on our site, against our target.",
-        name: "Harsh V.",
-        role: "Partner",
-        initials: "HV"
-      },
-      {
-        quote: "Closures without the scramble",
-        text: "The sale ran to a process. We stopped living on last-minute follow-ups.",
-        name: "Diya S.",
-        role: "Residential Lead",
-        initials: "DS"
-      }
-    ];
-
-    function paintCard(card, review) {
-      const quote = card.querySelector(".voices__quote");
-      const text = card.querySelector(".voices__text");
-      const avatar = card.querySelector(".voices__avatar");
-      const name = card.querySelector(".voices__name");
-      const role = card.querySelector(".voices__role");
-      if (quote) quote.textContent = "“" + review.quote + "”";
-      if (text) text.textContent = review.text;
-      if (avatar) avatar.textContent = review.initials;
-      if (name) name.textContent = review.name;
-      if (role) role.textContent = review.role;
-    }
-
-    function shownIndexes() {
-      return cards.map(function (card) {
-        return Number(card.getAttribute("data-review"));
-      });
-    }
-
-    function nextIndex(current) {
-      const used = shownIndexes();
-      let index = (current + 1) % reviews.length;
-      let hops = 0;
-      while (used.indexOf(index) !== -1 && hops < reviews.length) {
-        index = (index + 1) % reviews.length;
-        hops += 1;
-      }
-      return index;
-    }
-
-    cards.forEach(function (card, index) {
-      card.setAttribute("data-review", String(index));
-      paintCard(card, reviews[index]);
-      card.addEventListener("mouseenter", function () {
-        card.setAttribute("data-hold", "true");
-      });
-      card.addEventListener("mouseleave", function () {
-        card.removeAttribute("data-hold");
-      });
+    prev.addEventListener("click", function () {
+      go(-1);
     });
 
-    let rotateAt = 0;
-    let swapping = false;
+    next.addEventListener("click", function () {
+      go(1);
+    });
 
-    function rotateOne() {
-      if (swapping) return;
-      if (!section.classList.contains("is-in")) return;
-      if (document.body.classList.contains("menu-open")) return;
-      if (document.hidden) return;
-      if (reduceMotion) return;
+    viewport.addEventListener(
+      "keydown",
+      function (event) {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          go(-1);
+        } else if (event.key === "ArrowRight") {
+          event.preventDefault();
+          go(1);
+        }
+      }
+    );
 
-      const card = cards[rotateAt % cards.length];
-      rotateAt += 1;
-      if (card.getAttribute("data-hold") === "true") return;
+    viewport.addEventListener("scroll", function () {
+      const step = cardStep();
+      if (!step) return;
+      index = Math.round(viewport.scrollLeft / step);
+      update();
+    }, { passive: true });
+    window.addEventListener("resize", update);
+    update();
+  }
 
-      const current = Number(card.getAttribute("data-review"));
-      const upcoming = nextIndex(current);
-      if (upcoming === current) return;
+  function initQuotesSlider(section) {
+    if (!section) return;
 
-      swapping = true;
-      card.classList.add("is-swap");
-      window.setTimeout(function () {
-        card.setAttribute("data-review", String(upcoming));
-        paintCard(card, reviews[upcoming]);
-        card.classList.remove("is-swap");
-        swapping = false;
-      }, 420);
+    const viewport = section.querySelector(".quotes__viewport");
+    const prev = section.querySelector(".quotes__nav--prev");
+    const next = section.querySelector(".quotes__nav--next");
+    const cards = section.querySelectorAll(".quotes__card");
+    if (!viewport || !prev || !next || !cards.length) return;
+
+    const grid = cards[0].parentElement;
+    let index = 0;
+    let timer = 0;
+    let hovering = false;
+
+    function cardStep() {
+      const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+      return cards[0].offsetWidth + gap;
     }
 
-    window.setInterval(rotateOne, 3200);
+    function visibleCount() {
+      const step = cardStep();
+      if (!step) return 1;
+      return Math.max(1, Math.round(viewport.clientWidth / step));
+    }
+
+    function maxIndex() {
+      return Math.max(0, cards.length - visibleCount());
+    }
+
+    function render() {
+      const step = cardStep();
+      const max = maxIndex();
+      index = Math.max(0, Math.min(max, index));
+      grid.style.transform = "translate3d(" + (-index * step) + "px, 0, 0)";
+    }
+
+    function go(dir, fromUser) {
+      const max = maxIndex();
+      if (max <= 0) return;
+      index += dir;
+      if (index > max) index = 0;
+      if (index < 0) index = max;
+      render();
+      if (fromUser) play();
+    }
+
+    function stop() {
+      if (timer) window.clearInterval(timer);
+      timer = 0;
+    }
+
+    function play() {
+      stop();
+      if (reduceMotion || hovering) return;
+      timer = window.setInterval(function () {
+        if (document.body.classList.contains("menu-open")) return;
+        if (document.hidden) return;
+        go(1, false);
+      }, 5000);
+    }
+
+    prev.addEventListener("click", function () {
+      go(-1, true);
+    });
+
+    next.addEventListener("click", function () {
+      go(1, true);
+    });
+
+    viewport.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        go(-1, true);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        go(1, true);
+      }
+    });
+
+    section.addEventListener("mouseenter", function () {
+      hovering = true;
+      stop();
+    });
+
+    section.addEventListener("mouseleave", function () {
+      hovering = false;
+      play();
+    });
+
+    window.addEventListener("resize", render);
+
+    const io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) play();
+          else stop();
+        });
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(section);
   }
 })();
