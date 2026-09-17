@@ -40,9 +40,14 @@
     if (event.key === "Escape") setMenu(false);
   });
 
+  let scrollTick = false;
   function onScroll() {
-    if (!header) return;
-    header.classList.toggle("is-scrolled", window.scrollY > 8);
+    if (scrollTick) return;
+    scrollTick = true;
+    window.requestAnimationFrame(function () {
+      if (header) header.classList.toggle("is-scrolled", window.scrollY > 8);
+      scrollTick = false;
+    });
   }
 
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -59,7 +64,6 @@
   const founder = document.querySelector(".founder");
   const journey = document.querySelector(".journey");
   const offer = document.querySelector(".offer");
-  const objective = document.querySelector(".objective");
   const why = document.querySelector(".why");
   const voices = document.querySelector(".voices");
   const projects = document.querySelector(".projects");
@@ -94,12 +98,41 @@
     observer.observe(el);
   }
 
+  function pauseOffscreen(el) {
+    if (!el) return;
+    const io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          el.classList.toggle("is-away", !entry.isIntersecting);
+        });
+      },
+      { rootMargin: "12% 0px" }
+    );
+    io.observe(el);
+  }
+
+  document.addEventListener("click", function (event) {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link) return;
+    const id = link.getAttribute("href");
+    if (!id || id === "#") return;
+    const target = document.querySelector(id);
+    if (!target || target.hasAttribute("hidden")) return;
+    event.preventDefault();
+    target.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start"
+    });
+    if (history.replaceState) history.replaceState(null, "", id);
+  });
+
   observeReveal(system);
   observeReveal(founder);
   observeReveal(journey);
   observeReveal(offer);
-  observeReveal(objective);
   observeReveal(why, initWhy(why));
+  pauseOffscreen(hero);
+  pauseOffscreen(journey);
   observeReveal(voices);
   observeReveal(projects, null, {
     threshold: 0.04,
@@ -278,9 +311,9 @@
     let raf = 0;
 
     function count() {
-      if (width < 640) return 42;
-      if (width * height > 1400000) return 110;
-      return 88;
+      if (width < 640) return 22;
+      if (width * height > 1400000) return 48;
+      return 36;
     }
 
     function seed() {
@@ -377,11 +410,6 @@
       raf = 0;
     }
 
-    function inView() {
-      const rect = section.getBoundingClientRect();
-      return rect.bottom > 0 && rect.top < window.innerHeight;
-    }
-
     resize();
     draw();
 
@@ -393,10 +421,12 @@
       ro.observe(section);
     }
 
+    let visible = false;
     const io = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
-          if (entry.isIntersecting) start();
+          visible = entry.isIntersecting;
+          if (visible) start();
           else stop();
         });
       },
@@ -404,9 +434,23 @@
     );
     io.observe(section);
 
+    let scrollIdle;
+    window.addEventListener(
+      "scroll",
+      function () {
+        if (!visible) return;
+        stop();
+        window.clearTimeout(scrollIdle);
+        scrollIdle = window.setTimeout(function () {
+          if (visible && !document.hidden) start();
+        }, 160);
+      },
+      { passive: true }
+    );
+
     document.addEventListener("visibilitychange", function () {
       if (document.hidden) stop();
-      else if (inView()) start();
+      else if (visible) start();
     });
   }
 

@@ -107,7 +107,7 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 html,
@@ -123,7 +123,6 @@ body {
   background: var(--white);
   line-height: var(--leading-body);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 body.menu-open {
@@ -264,19 +263,17 @@ button {
   z-index: 50;
   background: transparent;
   border-bottom: 1px solid transparent;
-  transition: background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease;
+  transition: background 0.35s ease, border-color 0.35s ease;
 }
 
 .site-header.is-scrolled:not(.is-menu-open) {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.96);
   border-bottom-color: transparent;
-  backdrop-filter: blur(12px);
 }
 
 .site-header.is-menu-open {
   background: transparent;
   border-bottom-color: rgba(255, 255, 255, 0.12);
-  backdrop-filter: none;
 }
 
 .site-header.is-scrolled:not(.is-menu-open) .nav__toggle-line {
@@ -542,6 +539,10 @@ button {
   opacity: 1 !important;
   z-index: 1;
   animation: heroZoom 7.5s ease-out forwards;
+}
+
+.hero.is-away .hero__media img.is-active {
+  animation-play-state: paused;
 }
 
 .hero__inner {
@@ -1155,6 +1156,11 @@ button {
   animation: journey-tail var(--journey-loop) linear infinite;
 }
 
+.journey.is-away .journey__wire::after,
+.journey.is-away .journey__wire::before {
+  animation-play-state: paused;
+}
+
 .journey__wire::before {
   content: "";
   position: absolute;
@@ -1302,6 +1308,9 @@ button {
   color: var(--black-soft);
 }
 
+.journey.is-away .journey__node img {
+  animation-play-state: paused;
+}
 .journey.is-in .journey__step:nth-child(1) .journey__node { transition-delay: 0.18s; }
 .journey.is-in .journey__step:nth-child(1) .journey__copy { transition-delay: 0.3s; }
 .journey.is-in .journey__step:nth-child(1) .journey__node img {
@@ -1532,6 +1541,11 @@ button {
   color: var(--white);
   background: var(--black);
   scroll-margin-top: var(--nav-h);
+}
+
+.objective[hidden],
+.objective {
+  display: none !important;
 }
 
 .objective__media {
