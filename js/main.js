@@ -166,9 +166,11 @@
     const panel = section.querySelector(".offer__panel");
     const panelIndex = panel.querySelector(".offer__panel-index");
     const panelName = panel.querySelector(".offer__panel-name");
+    const panelLead = panel.querySelector(".offer__panel-lead");
     const panelText = panel.querySelector(".offer__panel-text");
+    const panelMore = panel.querySelector(".offer__panel-more");
     const mark = section.querySelector(".offer__mark");
-    if (!tabs.length || !panel || !panelText || !panelName || !panelIndex) return;
+    if (!tabs.length || !panel || !panelText || !panelName || !panelIndex || !panelLead || !panelMore) return;
 
     let swapTimer;
 
@@ -179,7 +181,9 @@
       return {
         index: index,
         name: name,
-        copy: button.getAttribute("data-copy") || ""
+        lead: button.getAttribute("data-lead") || "",
+        copy: button.getAttribute("data-copy") || "",
+        more: button.getAttribute("data-more") || ""
       };
     }
 
@@ -187,7 +191,9 @@
       const next = labelFrom(button);
       panelIndex.textContent = next.index;
       panelName.textContent = next.name;
+      panelLead.textContent = next.lead;
       panelText.textContent = next.copy;
+      panelMore.textContent = next.more;
       if (mark) mark.textContent = next.index;
     }
 
