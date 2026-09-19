@@ -148,7 +148,7 @@
   });
   observeReveal(blog);
   observeReveal(closer);
-  document.querySelectorAll(".post-block, .post-beliefs, .svc-row, .svc-cta").forEach(function (el) {
+  document.querySelectorAll(".post-block, .post-beliefs, .svc-row, .svc-cta, .blog-article").forEach(function (el) {
     observeReveal(el);
   });
 
