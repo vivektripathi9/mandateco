@@ -148,10 +148,22 @@
   });
   observeReveal(blog);
   observeReveal(closer);
+  document.querySelectorAll(".post-block, .post-beliefs, .svc-row, .svc-cta").forEach(function (el) {
+    observeReveal(el);
+  });
+
+  const svcHero = document.querySelector(".svc-hero");
+  if (svcHero) {
+    window.requestAnimationFrame(function () {
+      svcHero.classList.add("is-ready");
+    });
+  }
   initOffer(offer);
   initWhyNet(why);
   initVoicesSlider(voices);
   initQuotesSlider(quotes);
+  initContactForm(document.getElementById("enquire-form"));
+  initPostQa(document.getElementById("post-qa"));
 
   if (projects && location.hash === "#projects") {
     window.requestAnimationFrame(function () {
@@ -668,5 +680,52 @@
       { threshold: 0.2 }
     );
     io.observe(section);
+  }
+
+  function initContactForm(form) {
+    if (!form) return;
+
+    const error = document.getElementById("enquire-error");
+    const done = form.querySelector(".enquire__done");
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      if (!form.checkValidity()) {
+        if (error) error.hidden = false;
+        form.reportValidity();
+        return;
+      }
+
+      if (error) error.hidden = true;
+      form.classList.add("is-sent");
+      if (done) done.hidden = false;
+    });
+  }
+
+  function initPostQa(root) {
+    if (!root) return;
+
+    const items = root.querySelectorAll(".post-qa__item");
+
+    items.forEach(function (item) {
+      const toggle = item.querySelector(".post-qa__toggle");
+      if (!toggle) return;
+
+      toggle.addEventListener("click", function () {
+        const open = item.classList.contains("is-open");
+
+        items.forEach(function (other) {
+          const otherToggle = other.querySelector(".post-qa__toggle");
+          other.classList.remove("is-open");
+          if (otherToggle) otherToggle.setAttribute("aria-expanded", "false");
+        });
+
+        if (!open) {
+          item.classList.add("is-open");
+          toggle.setAttribute("aria-expanded", "true");
+        }
+      });
+    });
   }
 })();
