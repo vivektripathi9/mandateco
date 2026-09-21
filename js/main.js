@@ -148,7 +148,7 @@
   });
   observeReveal(blog);
   observeReveal(closer);
-  document.querySelectorAll(".post-block, .post-beliefs, .svc-row, .svc-cta, .blog-article").forEach(function (el) {
+  document.querySelectorAll(".post-block, .post-beliefs, .svc-row, .svc-cta, .blog-article, .care-track, .care-why, .care-roles, .care-culture, .care-apply, .care-role").forEach(function (el) {
     observeReveal(el);
   });
 
