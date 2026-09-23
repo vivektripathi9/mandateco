@@ -70,6 +70,7 @@
   const projects = document.querySelector(".projects");
   const blog = document.querySelector(".blog");
   const closer = document.querySelector(".closer");
+  const compare = document.querySelector(".compare");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function observeReveal(el, onEnter, opts) {
@@ -148,9 +149,24 @@
   });
   observeReveal(blog);
   observeReveal(closer);
-  document.querySelectorAll(".post-block, .post-beliefs, .svc-row, .svc-cta, .blog-article, .care-track, .care-why, .care-roles, .care-culture, .care-apply, .care-role").forEach(function (el) {
+  observeReveal(compare);
+  document.querySelectorAll(".compare__intro, .compare__table, .compare__feats, .compare__action").forEach(function (el) {
+    observeReveal(el, null, {
+      threshold: 0.16,
+      rootMargin: "0px 0px -10% 0px"
+    });
+  });
+  document.querySelectorAll(".post-block, .post-beliefs, .svc-row, .svc-cta, .blog-article, .care-track, .care-why, .care-tracks, .care-roles, .care-culture, .care-apply, .care-role, .flow, .flow-card, .flow__head, .flow__steps, .believe, .case, .cases-cta").forEach(function (el) {
     observeReveal(el);
   });
+  observeReveal(document.querySelector(".flow-stats"), function () {
+    animateFlowStats(document.querySelector(".flow-stats"));
+  });
+  observeReveal(document.querySelector(".cases-hero"), function () {
+    animateFlowStats(document.querySelector(".cases-hero"));
+  });
+  initCasesFilter(document.querySelector(".cases"));
+  initCareHire(document.querySelector(".care-tracks"));
 
   const svcHero = document.querySelector(".svc-hero");
   if (svcHero) {
@@ -160,6 +176,7 @@
   }
   initOffer(offer);
   initWhyNet(why);
+  initWhyNet(compare);
   initVoicesSlider(voices);
   initQuotesSlider(quotes);
   initContactForm(document.getElementById("enquire-form"));
@@ -726,6 +743,136 @@
           toggle.setAttribute("aria-expanded", "true");
         }
       });
+    });
+  }
+
+  function initCareHire(root) {
+    if (!root) return;
+
+    const panel = root.querySelector(".care-hire");
+    const buttons = root.querySelectorAll(".care-track__more[data-track]");
+    const roles = root.querySelectorAll(".care-role[data-track]");
+    const roleSelect = document.querySelector('#enquire-form select[name="role"]');
+    if (!panel || !buttons.length || !roles.length) return;
+
+    function showRoles(track) {
+      roles.forEach(function (role) {
+        const match = role.getAttribute("data-track") === track;
+        role.classList.toggle("is-filtered", !match);
+        role.classList.toggle("is-in", match);
+      });
+    }
+
+    function open(track) {
+      const wasOpen = panel.classList.contains("is-open");
+      panel.classList.add("is-open");
+      panel.setAttribute("aria-hidden", "false");
+      buttons.forEach(function (button) {
+        const on = button.getAttribute("data-track") === track;
+        button.setAttribute("aria-expanded", on ? "true" : "false");
+        const card = button.closest(".care-track");
+        if (card) card.classList.toggle("is-active", on);
+      });
+      showRoles(track);
+      window.requestAnimationFrame(function () {
+        panel.scrollIntoView({
+          behavior: reduceMotion || wasOpen ? "auto" : "smooth",
+          block: "start"
+        });
+      });
+    }
+
+    function close() {
+      panel.classList.remove("is-open");
+      panel.setAttribute("aria-hidden", "true");
+      buttons.forEach(function (button) {
+        button.setAttribute("aria-expanded", "false");
+        const card = button.closest(".care-track");
+        if (card) card.classList.remove("is-active");
+      });
+      roles.forEach(function (role) {
+        role.classList.remove("is-in");
+        role.classList.add("is-filtered");
+      });
+    }
+
+    buttons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        const track = button.getAttribute("data-track");
+        const openAlready =
+          button.getAttribute("aria-expanded") === "true" &&
+          panel.classList.contains("is-open");
+        if (openAlready) {
+          close();
+          return;
+        }
+        open(track);
+      });
+    });
+
+    panel.querySelectorAll(".care-role__cta[data-role]").forEach(function (link) {
+      link.addEventListener("click", function () {
+        if (!roleSelect) return;
+        const value = link.getAttribute("data-role");
+        if (value) roleSelect.value = value;
+      });
+    });
+  }
+
+  function initCasesFilter(root) {
+    if (!root) return;
+
+    const bar = root.querySelector(".cases__filters");
+    const cards = root.querySelectorAll(".case");
+    const empty = root.querySelector(".cases__empty");
+    if (!bar || !cards.length) return;
+
+    function apply(filter) {
+      let shown = 0;
+
+      cards.forEach(function (card) {
+        const tags = (card.getAttribute("data-tags") || "").split(/\s+/);
+        const match = filter === "all" || tags.indexOf(filter) !== -1;
+        card.classList.toggle("is-filtered", !match);
+        if (match) shown += 1;
+      });
+
+      if (empty) empty.hidden = shown > 0;
+    }
+
+    bar.addEventListener("click", function (event) {
+      const button = event.target.closest("[data-filter]");
+      if (!button || !bar.contains(button)) return;
+
+      bar.querySelectorAll("[data-filter]").forEach(function (item) {
+        const active = item === button;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+
+      apply(button.getAttribute("data-filter"));
+    });
+  }
+
+  function animateFlowStats(root) {
+    if (!root) return;
+    const nodes = root.querySelectorAll(".flow-stats__value[data-count], .cases-hero__value[data-count]");
+    nodes.forEach(function (el) {
+      const target = parseFloat(el.getAttribute("data-count"));
+      if (isNaN(target)) return;
+      const decimals = parseInt(el.getAttribute("data-decimals") || "0", 10);
+      const suffix = el.getAttribute("data-suffix") || "";
+      const start = performance.now();
+      const duration = 1100;
+
+      function tick(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = (target * eased).toFixed(decimals) + suffix;
+        if (t < 1) window.requestAnimationFrame(tick);
+      }
+
+      window.requestAnimationFrame(tick);
     });
   }
 })();
