@@ -2523,7 +2523,8 @@ button {
 
 .projects__head {
   max-width: 38rem;
-  margin-bottom: clamp(1.5rem, 3.5vw, 2.25rem);
+  margin: 0 auto clamp(1.5rem, 3.5vw, 2.25rem);
+  text-align: center;
 }
 
 .projects__eyebrow {
@@ -2755,7 +2756,8 @@ button {
 
 .blog__head {
   max-width: 38rem;
-  margin-bottom: clamp(1.5rem, 3.5vw, 2.25rem);
+  margin: 0 auto clamp(1.5rem, 3.5vw, 2.25rem);
+  text-align: center;
 }
 
 .blog__eyebrow {
@@ -3553,6 +3555,44 @@ button {
   color: var(--black);
 }
 
+.contact .enquire__title {
+  font-size: clamp(1.45rem, 2.4vw, 1.85rem);
+  line-height: 1.2;
+}
+
+.contact .enquire__lead {
+  margin: 0 0 1.15rem;
+}
+
+.contact .enquire__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.95rem 1.35rem;
+}
+
+.contact .enquire__field {
+  gap: 0.4rem;
+}
+
+.contact .enquire__field textarea {
+  min-height: 0;
+  height: 2.1rem;
+  resize: none;
+  line-height: 1.4;
+}
+
+.contact .enquire__check,
+.contact .enquire__error,
+.contact .enquire__submit,
+.contact .enquire__done {
+  grid-column: 1 / -1;
+}
+
+.contact .enquire__submit {
+  min-height: 2.75rem;
+  margin-top: 0;
+}
+
 @media (max-width: 900px) {
   .contact__inner {
     grid-template-columns: 1fr;
@@ -3568,6 +3608,10 @@ button {
   .contact__points {
     grid-template-columns: 1fr;
     gap: 1.75rem;
+  }
+
+  .contact .enquire__form {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -3835,8 +3879,9 @@ button {
 }
 
 .post-beliefs__head {
-  margin-bottom: clamp(2rem, 4vw, 3.25rem);
-  max-width: 28rem;
+  margin: 0 auto clamp(2rem, 4vw, 3.25rem);
+  max-width: 36rem;
+  text-align: center;
 }
 
 .post-beliefs__eyebrow {
@@ -3845,8 +3890,7 @@ button {
 }
 
 .post-beliefs__title {
-  margin: 0;
-  max-width: 14ch;
+  margin: 0 auto;
 }
 
 .post-beliefs__rail {
@@ -4816,26 +4860,24 @@ button {
 .care-track:nth-child(4) { transition-delay: 0.21s; }
 
 .care-track__photo {
-  width: min(100%, 13.5rem);
+  width: min(100%, 11.5rem);
   aspect-ratio: 1;
-  margin: 0 0 1.25rem;
+  margin: 0 0 1.1rem;
   overflow: hidden;
-  border-radius: 50%;
-  background: #ececec;
+  background: transparent;
 }
 
 .care-track__photo img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center 20%;
-  transform: scale(1.04);
-  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  object-fit: contain;
+  display: block;
+  transform: none;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.care-track.is-in .care-track__photo img,
 .care-track:hover .care-track__photo img {
-  transform: scale(1);
+  transform: scale(1.04);
 }
 
 .care-track__dept {
@@ -5239,6 +5281,53 @@ button {
   transition: opacity 0.85s ease 0.08s, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.08s;
 }
 
+.care-apply .enquire__title {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 300;
+  line-height: var(--leading-md);
+  letter-spacing: var(--tracking-tight);
+}
+
+.care-apply .enquire__lead {
+  margin: 0 0 1.5rem;
+}
+
+.care-apply .enquire__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.95rem 1.5rem;
+}
+
+.care-apply .enquire__field {
+  gap: 0.4rem;
+}
+
+.care-apply .enquire__field textarea {
+  min-height: 0;
+  height: 2.1rem;
+  resize: none;
+  line-height: 1.4;
+}
+
+.care-apply .enquire__check,
+.care-apply .enquire__error,
+.care-apply .enquire__submit,
+.care-apply .enquire__done {
+  grid-column: 1 / -1;
+}
+
+.care-apply .enquire__check {
+  margin-top: 0.1rem;
+}
+
+.care-apply .enquire__submit {
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0;
+}
+
 .care-apply.is-in .enquire {
   opacity: 1;
   transform: none;
@@ -5295,6 +5384,10 @@ button {
 
   .care-track__note {
     max-width: 20rem;
+  }
+
+  .care-apply .enquire__form {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -6376,7 +6469,7 @@ button {
 .believe {
   background: var(--white);
   color: var(--black);
-  padding: var(--section-y) var(--pad-x);
+  padding: clamp(2rem, 4.5vw, 3.25rem) var(--pad-x);
 }
 
 .believe__inner {
@@ -6386,9 +6479,12 @@ button {
 
 .believe__head {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
-  margin-bottom: clamp(2rem, 4vw, 3rem);
+  justify-content: center;
+  text-align: center;
+  gap: 0.7rem;
+  margin-bottom: 1.15rem;
 }
 
 .believe__title {
@@ -6409,12 +6505,11 @@ button {
 
 .believe__rule {
   display: block;
-  flex: 1;
+  width: 4.5rem;
   height: 1px;
-  max-width: 6.5rem;
   background: var(--hairline-strong);
   transform: scaleX(0);
-  transform-origin: left;
+  transform-origin: center;
   transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
 }
 
@@ -6426,7 +6521,7 @@ button {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.75rem 1.25rem;
+  gap: 0.75rem 0.65rem;
   margin: 0;
   padding: 0;
 }
@@ -6451,9 +6546,9 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.4rem;
-  height: 3.4rem;
-  margin-bottom: 1rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: 0.5rem;
   border-radius: 50%;
   background: #f3f2ef;
   color: var(--black);
@@ -6471,16 +6566,18 @@ button {
 }
 
 .believe__name {
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.2rem;
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 400;
+  line-height: 1.2;
 }
 
 .believe__grid .description-sm {
   margin: 0 auto;
-  max-width: 16rem;
+  max-width: 18rem;
   color: var(--black-soft);
+  line-height: 1.4;
 }
 
 @media (hover: hover) and (pointer: fine) {
